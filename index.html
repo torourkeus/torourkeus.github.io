@@ -3,42 +3,53 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grand Ledge Study Packet</title>
+    <title>My Mobile Apps</title>
     <style>
-        body { font-family: -apple-system, sans-serif; line-height: 1.6; padding: 20px; background: #f2f2f7; color: #1c1c1e; }
-        .container { max-width: 600px; margin: 0 auto; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-        h1 { color: #007aff; border-bottom: 2px solid #e5e5ea; padding-bottom: 8px; }
-        h2 { color: #1c1c1e; margin-top: 24px; }
-        ul { padding-left: 20px; }
-        li { margin-bottom: 8px; }
-        strong { color: #3a3a3c; }
+        body {
+            font-family: -apple-system, sans-serif;
+            background-color: #f2f2f7;
+            padding: 20px;
+            text-align: center;
+        }
+        h1 {
+            color: #1c1c1e;
+            margin-bottom: 30px;
+        }
+        .app-link {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: white;
+            padding: 18px;
+            margin: 12px auto;
+            max-width: 320px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: #007aff;
+            font-weight: bold;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        .app-link:active {
+            background-color: #e5e5ea;
+        }
+        .arrow {
+            color: #c7c7cc;
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Grand Ledge Interview Study Packet</h1>
-        
-        <h2>District Overview</h2>
-        <ul>
-            <li><strong>Superintendent:</strong> Dr. Bill Barnes</li>
-            <li><strong>High School Principal:</strong> Ken Wright</li>
-            <li><strong>Assistant Principals:</strong> Brandi Schmidt, Michael Silsby</li>
-            <li><strong>Athletic Director:</strong> Steve Baker</li>
-        </ul>
 
-        <h2>Points of Pride & Core Values</h2>
-        <ul>
-            <li><strong>"Committed to Excellence":</strong> High academic standards combined with robust community support.</li>
-            <li><strong>Recent Infrastructure Upgrades:</strong> Modernized facilities, classrooms, and tech integration thanks to community bonds.</li>
-            <li><strong>MTSS Framework:</strong> Strong focus on Multi-Tiered System of Supports to ensure academic, behavioral, and emotional success for every student.</li>
-        </ul>
+    <h1>My Dashboard</h1>
+    
+    <a href="./flashcards/" class="app-link">
+        <span>🗂️ GL Flashcards App</span>
+        <span class="arrow">➔</span>
+    </a>
 
-        <h2>Key Interview Themes to Emphasize</h2>
-        <ul>
-            <li><strong>Community & Relationship Building:</strong> Grand Ledge values strong partnerships between staff, parents, and local stakeholders.</li>
-            <li><strong>Data-Driven Instruction:</strong> Be ready to discuss how you use formative and summative data to adjust instruction.</li>
-            <li><strong>Inclusivity & Belonging:</strong> Creating a classroom environment where all students feel safe, valued, and supported.</li>
-        </ul>
-    </div>
+    <a href="./packet/" class="app-link">
+        <span>📄 GL Study Packet</span>
+        <span class="arrow">➔</span>
+    </a>
+
 </body>
 </html>
