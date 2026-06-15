@@ -1,0 +1,1262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#1F3864">
+<title>AP Interview Flashcards — Grand Ledge</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  :root{
+    --navy:#1F3864; --navy2:#2E4d7b; --amber:#B45309; --amber-bg:#FFF6E0;
+    --ink:#1f2733; --gray:#5b6573; --line:#e1e6ee; --bg:#eef1f6; --card:#ffffff;
+    --green:#15803d; --green-bg:#e9f6ee; --red:#b91c1c; --red-bg:#fbecec;
+  }
+  html,body{ height:100%; }
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:var(--bg); color:var(--ink); display:flex; flex-direction:column;
+    height:100dvh; overflow:hidden;
+  }
+  /* ---- top bar ---- */
+  header{
+    background:var(--navy); color:#fff; padding:calc(env(safe-area-inset-top) + 10px) 14px 10px;
+    flex:0 0 auto;
+  }
+  .titlerow{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .titlerow h1{ font-size:16px; font-weight:700; letter-spacing:.2px; }
+  .counter{ font-size:12.5px; opacity:.85; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .progress{ height:4px; background:rgba(255,255,255,.22); border-radius:3px; margin-top:9px; overflow:hidden; }
+  .progress > div{ height:100%; width:0; background:#9ec1ff; transition:width .25s; }
+  /* ---- controls ---- */
+  .controls{ display:flex; gap:6px; margin-top:10px; flex-wrap:wrap; }
+  .seg{ display:flex; background:rgba(255,255,255,.12); border-radius:9px; padding:3px; gap:2px; flex:1 1 auto; }
+  .seg button{
+    flex:1; border:0; background:transparent; color:#cdd9ee; font-size:12.5px; font-weight:600;
+    padding:7px 4px; border-radius:7px; cursor:pointer; transition:.15s; white-space:nowrap;
+  }
+  .seg button.on{ background:#fff; color:var(--navy); }
+  .iconbtn{
+    border:0; background:rgba(255,255,255,.12); color:#fff; border-radius:9px; padding:0 13px;
+    font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:6px;
+  }
+  .iconbtn.active{ background:var(--amber); }
+  /* ---- card area ---- */
+  main{ flex:1 1 auto; padding:14px; display:flex; min-height:0; }
+  .card{
+    background:var(--card); border-radius:18px; box-shadow:0 6px 22px rgba(31,56,100,.13);
+    width:100%; display:flex; flex-direction:column; overflow:hidden;
+  }
+  .card-meta{
+    flex:0 0 auto; padding:13px 16px 0; display:flex; align-items:center; gap:9px; flex-wrap:wrap;
+  }
+  .tag{ font-size:11px; font-weight:800; letter-spacing:.4px; color:var(--navy); text-transform:uppercase; }
+  .star{ font-size:11px; font-weight:800; color:var(--amber); }
+  .statepill{ font-size:11px; font-weight:700; padding:2px 8px; border-radius:20px; margin-left:auto; }
+  .statepill.got{ background:var(--green-bg); color:var(--green); }
+  .statepill.again{ background:var(--red-bg); color:var(--red); }
+  .card-scroll{ flex:1 1 auto; overflow-y:auto; padding:10px 16px 6px; -webkit-overflow-scrolling:touch; }
+  .question{ font-size:21px; line-height:1.34; font-weight:750; color:var(--ink); margin:4px 0 14px; }
+  .hint{
+    background:#f4f7fc; border-left:4px solid var(--navy2); border-radius:8px; padding:11px 13px;
+    font-size:15px; line-height:1.5; color:#37445a; margin-bottom:14px;
+  }
+  .hint b{ color:var(--navy); }
+  .reveal-block{ margin-bottom:8px; }
+  .reveal-label{ font-size:11px; font-weight:800; letter-spacing:.4px; color:var(--gray); text-transform:uppercase; margin:14px 0 5px; }
+  .reveal-body{ font-size:15.5px; line-height:1.55; color:#2b3442; }
+  .reveal-body.amber{ background:var(--amber-bg); border-radius:8px; padding:11px 13px; font-style:italic; }
+  .tags-row{ margin-top:12px; display:flex; flex-wrap:wrap; gap:6px; }
+  .chip{ background:#eef3fb; color:var(--navy); font-size:11.5px; font-weight:700; padding:4px 9px; border-radius:20px; }
+  .warn{ color:var(--amber); font-weight:700; }
+  /* ---- buttons under card ---- */
+  .actions{ flex:0 0 auto; padding:10px 16px calc(env(safe-area-inset-bottom) + 12px); display:flex; flex-direction:column; gap:8px; }
+  .bigbtn{
+    border:0; border-radius:13px; padding:15px; font-size:16px; font-weight:750; cursor:pointer;
+    width:100%; transition:.12s; display:flex; align-items:center; justify-content:center; gap:8px;
+  }
+  .bigbtn:active{ transform:scale(.985); }
+  .reveal-btn{ background:var(--navy); color:#fff; }
+  .hint-btn{ background:#dde6f4; color:var(--navy); }
+  .nav-row{ display:flex; gap:8px; }
+  .rate-row{ display:flex; gap:8px; }
+  .nav-row button{ flex:1; }
+  .prevbtn{ background:#e7ebf2; color:#46505f; }
+  .nextbtn{ background:var(--navy2); color:#fff; }
+  .gotbtn{ background:var(--green); color:#fff; flex:1; }
+  .againbtn{ background:#d97706; color:#fff; flex:1; }
+  .muted-small{ text-align:center; font-size:12px; color:var(--gray); padding:2px 0; }
+  /* ---- empty state ---- */
+  .empty{ text-align:center; margin:auto; padding:30px; color:var(--gray); }
+  .empty h2{ color:var(--navy); font-size:18px; margin-bottom:8px; }
+  .empty button{ margin-top:14px; background:var(--navy); color:#fff; border:0; padding:11px 18px; border-radius:10px; font-weight:700; font-size:14px; }
+  /* ---- menu sheet ---- */
+  .sheet-backdrop{ position:fixed; inset:0; background:rgba(20,28,45,.45); display:none; z-index:50; }
+  .sheet-backdrop.show{ display:block; }
+  .sheet{
+    position:fixed; left:0; right:0; bottom:0; background:#fff; border-radius:20px 20px 0 0; z-index:51;
+    padding:18px 18px calc(env(safe-area-inset-bottom) + 18px); transform:translateY(100%); transition:transform .25s;
+    box-shadow:0 -8px 30px rgba(0,0,0,.2);
+  }
+  .sheet.show{ transform:translateY(0); }
+  .sheet h3{ font-size:16px; color:var(--navy); margin-bottom:4px; }
+  .sheet p{ font-size:13px; color:var(--gray); margin-bottom:14px; line-height:1.4; }
+  .sheet .row{ display:flex; gap:8px; }
+  .sheet .row button{ flex:1; border:0; border-radius:11px; padding:13px; font-weight:700; font-size:14px; cursor:pointer; }
+  .resetbtn{ background:var(--red-bg); color:var(--red); }
+  .closebtn{ background:#eef1f6; color:#46505f; }
+  .stats{ display:flex; gap:10px; margin-bottom:16px; }
+  .stat{ flex:1; background:#f4f7fc; border-radius:12px; padding:12px; text-align:center; }
+  .stat .n{ font-size:22px; font-weight:800; color:var(--navy); font-variant-numeric:tabular-nums; }
+  .stat .l{ font-size:11px; color:var(--gray); margin-top:2px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="titlerow">
+    <h1>AP Interview Cards</h1>
+    <span class="counter" id="counter">0 / 0</span>
+  </div>
+  <div class="progress"><div id="progbar"></div></div>
+  <div class="controls">
+    <div class="seg" id="setSeg">
+      <button data-set="all" class="on">All</button>
+      <button data-set="universal">Universal</button>
+      <button data-set="grandledge">Grand Ledge</button>
+    </div>
+    <button class="iconbtn" id="starBtn">★ Must</button>
+    <button class="iconbtn" id="menuBtn">▤</button>
+  </div>
+</header>
+
+<main id="main"></main>
+
+<!-- menu sheet -->
+<div class="sheet-backdrop" id="backdrop"></div>
+<div class="sheet" id="sheet">
+  <h3>Session</h3>
+  <p>Progress saves automatically on this device.</p>
+  <div class="stats">
+    <div class="stat"><div class="n" id="statGot">0</div><div class="l">Got it</div></div>
+    <div class="stat"><div class="n" id="statAgain">0</div><div class="l">Practice</div></div>
+    <div class="stat"><div class="n" id="statLeft">0</div><div class="l">Unmarked</div></div>
+  </div>
+  <div class="row" style="margin-bottom:8px;">
+    <button class="closebtn" id="practiceOnly">Practice "again" only</button>
+  </div>
+  <div class="row">
+    <button class="resetbtn" id="resetBtn">Reset all progress</button>
+    <button class="closebtn" id="closeSheet">Close</button>
+  </div>
+</div>
+
+<script>
+const CARDS = [
+ {
+  "id": "Q1",
+  "set": "universal",
+  "star": true,
+  "cat": "Openers",
+  "q": "Tell us about yourself and your journey to this point.",
+  "hint": "90-second arc that ends with why this role, why now. Not a resume recital.",
+  "look": "A coherent arc, not a list. Do they land on why-this-role?",
+  "align": "15 years secondary → interim AP at 1,200-student Okemos → seeking the permanent seat. End forward-looking.",
+  "tags": [
+   "MID-YEAR COLD START"
+  ],
+  "notes": "Don't start at college. Start: “I've spent 15 years in secondary education.”"
+ },
+ {
+  "id": "Q2",
+  "set": "universal",
+  "cat": "Openers",
+  "q": "Why do you want to be an assistant principal?",
+  "hint": "Run toward the job, not away from the classroom.",
+  "look": "Kids, systems, staff support — not classroom fatigue.",
+  "align": "The moment you realized the office helps more kids than one classroom. The tracker proves you like the unglamorous parts.",
+  "tags": [
+   "THE TRACKER"
+  ],
+  "notes": "Never sound classroom-fatigued."
+ },
+ {
+  "id": "Q3",
+  "set": "universal",
+  "star": true,
+  "cat": "Openers",
+  "q": "Why are you leaving your current position?",
+  "hint": "Clean, non-bitter. The interim ended as designed.",
+  "look": "No bitterness. A clean narrative.",
+  "align": "“I served as Interim AP while our principal was on leave. He returned, the interim ended as designed, and I'm back in the classroom while I pursue a permanent administrative seat. The interim confirmed this is the work I want.”",
+  "tags": [],
+  "notes": "MEMORIZE word-for-word. Zero negativity about Okemos. One sentence, then pivot to them."
+ },
+ {
+  "id": "Q4",
+  "set": "universal",
+  "cat": "Openers",
+  "q": "What is your leadership philosophy?",
+  "hint": "Concrete enough to predict your behavior.",
+  "look": "Something behavioral, not a poster slogan.",
+  "align": "“A good administrator provides support and removes barriers.” Then prove it with a story.",
+  "tags": [
+   "THE TRACKER",
+   "UNION PRESIDENT"
+  ],
+  "notes": "Servant leadership without the buzzword."
+ },
+ {
+  "id": "Q5",
+  "set": "universal",
+  "cat": "Openers",
+  "q": "What do you think the role of an assistant principal actually is?",
+  "hint": "Discipline, attendance, operations, visibility — without resentment.",
+  "look": "Realistic grasp of the gritty parts, embraced not endured.",
+  "align": "“The AP owns the daily operational weight so teaching and leading can happen. I like that work; it's where consistency is built.”",
+  "tags": [],
+  "notes": ""
+ },
+ {
+  "id": "Q6",
+  "set": "universal",
+  "cat": "Openers",
+  "q": "What makes you the right fit for a school like ours?",
+  "hint": "Show you researched THEM specifically.",
+  "look": "District-specific evidence, not generic fit.",
+  "align": "Swap in district specifics. Core: secondary range, systems builder, relationship-centered discipline, stability.",
+  "tags": [],
+  "notes": ""
+ },
+ {
+  "id": "Q7",
+  "set": "universal",
+  "cat": "Openers",
+  "q": "Describe your ideal working relationship with your principal.",
+  "hint": "Loyalty + communication; no daylight in public.",
+  "look": "Will you make the principal's job easier and never surprise them?",
+  "align": "“Aligned in public, honest in private. I over-communicate up; my principal never gets surprised.”",
+  "tags": [
+   "MID-YEAR COLD START"
+  ],
+  "notes": ""
+ },
+ {
+  "id": "Q8",
+  "set": "universal",
+  "cat": "Openers",
+  "q": "What's your experience with students at this grade band?",
+  "hint": "Comfort across the building's full range.",
+  "look": "Are you at home with every age in the building?",
+  "align": "15 years 9-12; charter + K-8 summer program cover younger kids.",
+  "tags": [
+   "TRAUMA-INFORMED YEARS"
+  ],
+  "notes": "⚠ Don't oversell middle-level depth. “Same fairness, different delivery.”"
+ },
+ {
+  "id": "Q9",
+  "set": "universal",
+  "star": true,
+  "cat": "Discipline & Safety",
+  "q": "Describe your approach to student discipline.",
+  "hint": "Protect the struggling kid AND the learning environment. Consistency.",
+  "look": "A philosophy that holds both kid and classroom, applied consistently.",
+  "align": "Your philosophy line verbatim, then a kid story.",
+  "tags": [
+   "PHILOSOPHY",
+   "THE KID WHO TURNED"
+  ],
+  "notes": "Anchor answer. Rehearse until it bores you."
+ },
+ {
+  "id": "Q10",
+  "set": "universal",
+  "cat": "Discipline & Safety",
+  "q": "Walk us through how you handle a referral, start to finish.",
+  "hint": "Investigate → due process → communicate → document → follow up.",
+  "look": "Process thinking, including closing the loop with the teacher.",
+  "align": "Hear teacher, hear kid, gather facts, decide with data + history, call family AND close the loop with the referring teacher same day, document, follow up.",
+  "tags": [
+   "DOCUMENTATION STANDARD"
+  ],
+  "notes": "Pro move: “Referrals never vanish into a black hole.” Most candidates forget the teacher loop."
+ },
+ {
+  "id": "Q11",
+  "set": "universal",
+  "cat": "Discipline & Safety",
+  "q": "A teacher sends the same student a third time this week: “I don't want them back in my room.”",
+  "hint": "Support teacher AND student; find root cause; no instant capitulation.",
+  "look": "Balance, root-cause thinking, real follow-through.",
+  "align": "Data first (the pattern, what's happening that hour), talk to both, re-entry plan with supports, honest follow-through.",
+  "tags": [
+   "THE TRACKER"
+  ],
+  "notes": "Reference the “same three students over and over” line; consistency prevents this."
+ },
+ {
+  "id": "Q12",
+  "set": "universal",
+  "star": true,
+  "cat": "Discipline & Safety",
+  "q": "How do you ensure discipline is fair and consistent across all students?",
+  "hint": "Bias awareness + data + documentation + a progressive matrix.",
+  "look": "Systems that remove “depends who's asking.”",
+  "align": "Written standards; referral data reviewed for patterns; consequences mapped to a progressive matrix.",
+  "tags": [
+   "THE TRACKER",
+   "DOCUMENTATION STANDARD"
+  ],
+  "notes": ""
+ },
+ {
+  "id": "Q13",
+  "set": "universal",
+  "cat": "Discipline & Safety",
+  "q": "What does PBIS look like when it's done well?",
+  "hint": "More than posters: taught expectations, reinforcement, data, tiers.",
+  "look": "Real implementation understanding, not buzzwords.",
+  "align": "Reinforced PBIS-aligned systems mid-year at a 1,200-student building.",
+  "tags": [
+   "MID-YEAR COLD START"
+  ],
+  "notes": "⚠ You reinforced, didn't build from scratch. “I've seen what makes it stick and what makes staff roll their eyes.”"
+ },
+ {
+  "id": "Q14",
+  "set": "universal",
+  "cat": "Discipline & Safety",
+  "q": "What role do restorative practices play in your approach?",
+  "hint": "Balanced — not never-suspend, not skeptic.",
+  "look": "A measured view of restorative practice.",
+  "align": "Philosophy line. Differentiator: restoration never lands as extra work on a teacher's desk.",
+  "tags": [
+   "PHILOSOPHY"
+  ],
+  "notes": ""
+ },
+ {
+  "id": "Q15",
+  "set": "universal",
+  "cat": "Discipline & Safety",
+  "q": "When is suspension the right call?",
+  "hint": "Safety, severity, pattern, statute — plus its cost.",
+  "look": "Judgment, not reflex in either direction.",
+  "align": "“When a student's presence makes learning impossible or the building unsafe. But a suspension without a re-entry plan is a vacation with a grudge attached. Mine come with a way back.”",
+  "tags": [],
+  "notes": ""
+ },
+ {
+  "id": "Q16",
+  "set": "universal",
+  "cat": "Discipline & Safety",
+  "q": "Two students fight in the cafeteria. Walk us through your response.",
+  "hint": "Safety-first sequence → communication → documentation → debrief.",
+  "look": "A calm, correct sequence and a systems debrief.",
+  "align": "Separate/secure, medical check, separate statements, video, parents before buses, consequences per code with history, SRO if injury/statute, re-entry plan, document, fix the supervision gap.",
+  "tags": [],
+  "notes": "Pro move: end with the systems question — why was the cafeteria a place this could happen?"
+ },
+ {
+  "id": "Q17",
+  "set": "universal",
+  "cat": "Discipline & Safety",
+  "q": "You hear a rumor a student has a weapon at school. What do you do?",
+  "hint": "Immediate action, protocol, never solo heroics.",
+  "look": "Treat as credible; protocol fluency.",
+  "align": "Locate and isolate the student calmly, principal and SRO immediately, search per policy with a witness, document. Never wait, never search alone, never assume.",
+  "tags": [],
+  "notes": ""
+ },
+ {
+  "id": "Q18",
+  "set": "universal",
+  "cat": "Discipline & Safety",
+  "q": "A student tells you they're thinking about hurting themselves.",
+  "hint": "Never alone → warm handoff → parent same day → documented follow-up.",
+  "look": "Protocol plus humanity.",
+  "align": "Stay with them, listen without interrogating, warm handoff to counselor, risk protocol, parent contact with counselor same day, safety plan, follow-up they don't have to ask for.",
+  "tags": [],
+  "notes": "Land it: “The kid needs to know an adult moved fast and stayed kind.”"
+ },
+ {
+  "id": "Q19",
+  "set": "universal",
+  "cat": "Discipline & Safety",
+  "q": "How do you handle vaping / phones / the behavior issue of the year?",
+  "hint": "Realistic enforcement + consistency, not assemblies.",
+  "look": "Enforceable, consistent, with supports where there's addiction.",
+  "align": "Expectations taught up front, tiered consequences, supports for addiction, staff backed when they enforce.",
+  "tags": [],
+  "notes": "“A policy teachers won't enforce isn't a policy, it's a poster.”"
+ },
+ {
+  "id": "Q20",
+  "set": "universal",
+  "cat": "Discipline & Safety",
+  "q": "How would you address bullying, including online behavior from outside school?",
+  "hint": "Seriousness, school-nexus, protect the target, work both kids.",
+  "look": "Legal reach + protection + follow-up.",
+  "align": "Investigate fully, document, contact both families, consequences plus monitoring, supports for the target, unprompted follow-up. Online conduct that disrupts school walks in with the kid.",
+  "tags": [],
+  "notes": ""
+ },
+ {
+  "id": "Q21",
+  "set": "universal",
+  "star": true,
+  "cat": "Discipline & Safety",
+  "q": "A special education student commits a suspendable offense. How is your process different?",
+  "hint": "Manifestation determination, 10-day threshold, IEP team, FAPE.",
+  "look": "This separates real candidates from pretenders.",
+  "align": "You flagged IEP/manifestation in real write-ups: track cumulative days, loop in the case manager early, MDR before any decision that looks like a pattern of removal.",
+  "tags": [
+   "DOCUMENTATION STANDARD"
+  ],
+  "notes": "You have genuine material here. Slow down."
+ },
+ {
+  "id": "Q22",
+  "set": "universal",
+  "cat": "Discipline & Safety",
+  "q": "How do you build positive school culture, not just manage behavior?",
+  "hint": "Proactive: relationships, visibility, recognition, student voice.",
+  "look": "A culture vision beyond consequences.",
+  "align": "Doors, halls, cafeteria, events; know names; catch kids doing right; reinforced culture mid-year with no honeymoon.",
+  "tags": [
+   "MID-YEAR COLD START",
+   "THE KID WHO TURNED"
+  ],
+  "notes": ""
+ },
+ {
+  "id": "Q23",
+  "set": "universal",
+  "cat": "Discipline & Safety",
+  "q": "Two students tell opposite stories and you saw nothing. Now what?",
+  "hint": "Investigate; act on preponderance; document why.",
+  "look": "Fairness under ambiguity.",
+  "align": "Separate statements, witnesses, video, evidence; history as context not verdict; act on preponderance and document.",
+  "tags": [],
+  "notes": "“Sometimes the honest call is a lesser consequence and closer monitoring.”"
+ },
+ {
+  "id": "Q24",
+  "set": "universal",
+  "star": true,
+  "cat": "Attendance & Data",
+  "q": "What's your approach to improving student attendance?",
+  "hint": "Systems + relationships + tiers. Not just truancy letters.",
+  "look": "Your strongest category. Own it.",
+  "align": "Full tracker story, then the relational layer: the “what's going on?” call before the letter that threatens.",
+  "tags": [
+   "THE TRACKER"
+  ],
+  "notes": "Slow down. This is your home turf."
+ },
+ {
+  "id": "Q25",
+  "set": "universal",
+  "cat": "Attendance & Data",
+  "q": "How do you use data to make decisions?",
+  "hint": "Tools → decisions, not spreadsheets for their own sake.",
+  "look": "Data that changes what you do.",
+  "align": "“Data is a map, not a scoreboard.” Attendance trends, referral patterns, grade trajectories drive individual moves. NWEA experience.",
+  "tags": [
+   "THE TRACKER"
+  ],
+  "notes": ""
+ },
+ {
+  "id": "Q26",
+  "set": "universal",
+  "cat": "Attendance & Data",
+  "q": "Tell us about your experience with MTSS / tiered intervention.",
+  "hint": "Tiers, data review, intervention matching, progress monitoring.",
+  "look": "Practical fluency.",
+  "align": "Facilitated MTSS intervention meetings at Okemos; served on building data-review teams as a teacher.",
+  "tags": [],
+  "notes": "⚠ You ran meetings, didn't design the framework. “I'd learn how yours is wired before changing a thing.”"
+ },
+ {
+  "id": "Q27",
+  "set": "universal",
+  "cat": "Attendance & Data",
+  "q": "A third of your student body is chronically absent. Where do you start?",
+  "hint": "Diagnose before prescribing; tier it; post-COVID realism.",
+  "look": "It isn't one problem, so it isn't one strategy.",
+  "align": "Which kids, which patterns (Mondays? first hour? transport?). Then tiers: universal culture, targeted outreach, intensive case management.",
+  "tags": [
+   "THE TRACKER"
+  ],
+  "notes": "“You can't fix 30% with one strategy because it isn't one problem.”"
+ },
+ {
+  "id": "Q28",
+  "set": "universal",
+  "cat": "Attendance & Data",
+  "q": "How do you know whether an intervention is actually working?",
+  "hint": "Set metric + date; review on schedule; change the support, not the goal.",
+  "look": "Progress-monitoring discipline.",
+  "align": "Set the metric and date when it starts; review on schedule; change the support, not the goalpost.",
+  "tags": [
+   "THE KID WHO TURNED"
+  ],
+  "notes": ""
+ },
+ {
+  "id": "Q29",
+  "set": "universal",
+  "star": true,
+  "cat": "Instructional Leadership",
+  "q": "How do you support teachers?",
+  "hint": "Concrete acts, not vibes.",
+  "look": "Specific barrier-removal.",
+  "align": "Remove barriers: no chasing data, no vanished follow-through, no same-three-kids carousel. The tracker was built FOR teachers. Backed enforcement.",
+  "tags": [
+   "THE TRACKER"
+  ],
+  "notes": ""
+ },
+ {
+  "id": "Q30",
+  "set": "universal",
+  "cat": "Instructional Leadership",
+  "q": "Describe your experience observing and evaluating teachers.",
+  "hint": "Framework fluency + evidence-based feedback + honest scope.",
+  "look": "Real feedback experience, honest about evaluator-of-record gap.",
+  "align": "Danielson-aligned feedback through TLT, student teachers, long-term subs; supported supervision as interim AP.",
+  "tags": [
+   "TLT"
+  ],
+  "notes": "⚠ Not yet evaluator of record through full cycles. Name it + “principal mentorship in year one.”"
+ },
+ {
+  "id": "Q31",
+  "set": "universal",
+  "cat": "Instructional Leadership",
+  "q": "A veteran teacher is struggling and resistant to feedback. What do you do?",
+  "hint": "Respect + persistence + documentation. Relationship before remediation.",
+  "look": "Support vs accountability discernment.",
+  "align": "Union past = rare credibility. Curiosity first, pair with strengths, small specific goals, honest documentation.",
+  "tags": [
+   "UNION PRESIDENT"
+  ],
+  "notes": ""
+ },
+ {
+  "id": "Q32",
+  "set": "universal",
+  "cat": "Instructional Leadership",
+  "q": "What does good instruction look like when you walk into a classroom?",
+  "hint": "An actual instructional eye.",
+  "look": "Can you see learning, not just activity?",
+  "align": "Students doing the cognitive work, clear learning target, checks for understanding that change the next move, relationships visible in how kids take risks.",
+  "tags": [
+   "GRADING REFORM"
+  ],
+  "notes": ""
+ },
+ {
+  "id": "Q33",
+  "set": "universal",
+  "cat": "Instructional Leadership",
+  "q": "What's your philosophy on grading?",
+  "hint": "Principle over dogma — can be a culture-war tripwire.",
+  "look": "Thoughtful, not preachy.",
+  "align": "“A grade should tell the truth about what a kid knows.” Grading change moves at the speed of teacher trust.",
+  "tags": [
+   "GRADING REFORM"
+  ],
+  "notes": ""
+ },
+ {
+  "id": "Q34",
+  "set": "universal",
+  "cat": "Instructional Leadership",
+  "q": "How would you plan and lead professional development?",
+  "hint": "Tied to data + goals; respect teacher time.",
+  "look": "PD that changes practice.",
+  "align": "TLT: teacher-led PD that worked. Tech-coach years: you've run PD.",
+  "tags": [
+   "TLT"
+  ],
+  "notes": "“PD that could've been an email teaches staff to stop listening.”"
+ },
+ {
+  "id": "Q35",
+  "set": "universal",
+  "cat": "Instructional Leadership",
+  "q": "A teacher comes to you in tears after a parent berated them by email.",
+  "hint": "Protect your people, then solve the problem.",
+  "look": "Staff loyalty in a hard moment.",
+  "align": "Support first, facts second, then YOU take the parent meeting; teacher attends only if they want, prepped and backed.",
+  "tags": [
+   "SAME-TEAM CONFERENCE"
+  ],
+  "notes": "Loyalty is built in exactly these moments."
+ },
+ {
+  "id": "Q36",
+  "set": "universal",
+  "cat": "Staff & Adults",
+  "q": "Two staff members are in an ongoing conflict that's affecting the team.",
+  "hint": "Direct, early, private. No avoidance or triangulation.",
+  "look": "Adult conflict skill.",
+  "align": "Separately then together; name the impact on kids/team; working norms; follow up.",
+  "tags": [
+   "UNION PRESIDENT"
+  ],
+  "notes": "“I don't need them to be friends. I need them to be professionals.”"
+ },
+ {
+  "id": "Q37",
+  "set": "universal",
+  "cat": "Staff & Adults",
+  "q": "A teacher openly disagrees with a discipline decision you made.",
+  "hint": "Non-defensive; close the loop; hold the line when right.",
+  "look": "Correctable but not a pushover.",
+  "align": "Hear them fully and privately; explain what privacy allows; close referral loops; change course if they're right.",
+  "tags": [],
+  "notes": "“Correctable in private earns the right to be backed in public.”"
+ },
+ {
+  "id": "Q38",
+  "set": "universal",
+  "cat": "Staff & Adults",
+  "q": "You disagree with a decision your principal made. What do you do?",
+  "hint": "Loyalty + courage, in that order.",
+  "look": "Disagree-and-commit maturity.",
+  "align": "“Disagree in private, fully, once. Then commit in public like it was my idea. Ethical/legal lines differ; judgment calls belong to the principal.”",
+  "tags": [],
+  "notes": ""
+ },
+ {
+  "id": "Q39",
+  "set": "universal",
+  "cat": "Staff & Adults",
+  "q": "How do you handle confidential information in a small staff where everyone talks?",
+  "hint": "Discretion instincts.",
+  "look": "Are you a safe place for information?",
+  "align": "FERPA-clean documentation; sensitive records done right; personnel matters out of hallways and out of writing.",
+  "tags": [
+   "DOCUMENTATION STANDARD"
+  ],
+  "notes": "“People learn fast whether you're a safe place for information. I am.”"
+ },
+ {
+  "id": "Q40",
+  "set": "universal",
+  "cat": "Staff & Adults",
+  "q": "How do you build trust with a staff that didn't choose you?",
+  "hint": "Humility, visibility, follow-through.",
+  "look": "You've literally done this.",
+  "align": "Mid-year: show up everywhere, do unglamorous things fast, close every loop, listen before changing.",
+  "tags": [
+   "MID-YEAR COLD START"
+  ],
+  "notes": ""
+ },
+ {
+  "id": "Q41",
+  "set": "universal",
+  "cat": "Staff & Adults",
+  "q": "What's your experience with collective bargaining and working within a contract?",
+  "hint": "Respect the contract; no naivety.",
+  "look": "Rare differentiator — most candidates fear this.",
+  "align": "You negotiated one as local president. “The contract is the rulebook both sides agreed to. Know it cold and you get fewer grievances and better relationships.”",
+  "tags": [
+   "UNION PRESIDENT"
+  ],
+  "notes": "Hope for this question."
+ },
+ {
+  "id": "Q42",
+  "set": "universal",
+  "star": true,
+  "cat": "Families & Community",
+  "q": "An angry parent is in the office demanding to see you about a suspension. Go.",
+  "hint": "De-escalate, stay composed, partner without capitulating.",
+  "look": "Composure + partnership.",
+  "align": "Private room, listen all the way out, find the shared goal (their kid), explain within privacy limits, hold the decision if right, give a path forward.",
+  "tags": [
+   "SAME-TEAM CONFERENCE"
+  ],
+  "notes": ""
+ },
+ {
+  "id": "Q43",
+  "set": "universal",
+  "cat": "Families & Community",
+  "q": "How do you communicate with families proactively, not just when something's wrong?",
+  "hint": "Positive contact, accessibility, event visibility.",
+  "look": "Relationship before crisis.",
+  "align": "Positive calls home as practice; presence at games/concerts; plain-language communication.",
+  "tags": [],
+  "notes": "“If the first time a family hears from me is a suspension call, I've already failed the relationship.”"
+ },
+ {
+  "id": "Q44",
+  "set": "universal",
+  "cat": "Families & Community",
+  "q": "A parent goes over your head to the principal or superintendent.",
+  "hint": "No ego; alignment; learning posture.",
+  "look": "Maturity, not defensiveness.",
+  "align": "“That's their right. My principal is never surprised — they have my documentation. Then I check what in my communication left the family feeling unheard.”",
+  "tags": [],
+  "notes": ""
+ },
+ {
+  "id": "Q45",
+  "set": "universal",
+  "cat": "Families & Community",
+  "q": "How do you handle custody disputes or sensitive home circumstances?",
+  "hint": "Legal awareness, neutrality, documentation, kid-centered.",
+  "look": "Neutral and FERPA-aware.",
+  "align": "You've written a custody-proceeding behavioral summary: factual, neutral, FERPA-aware. “I'm not a weapon for either parent; my records assume a judge might read them.”",
+  "tags": [
+   "DOCUMENTATION STANDARD"
+  ],
+  "notes": ""
+ },
+ {
+  "id": "Q46",
+  "set": "universal",
+  "cat": "Operations & Judgment",
+  "q": "7:45 a.m.: a no-sub absence, a waiting parent, and a fight rumor online. Prioritize.",
+  "hint": "Triage: safety → supervision → service. Delegate.",
+  "look": "Triage logic + delegation.",
+  "align": "Investigate the rumor now while delegating coverage; give the parent a time and keep it.",
+  "tags": [],
+  "notes": "“The parent who waits fifteen minutes gets a better version of me than a distracted one.”"
+ },
+ {
+  "id": "Q47",
+  "set": "universal",
+  "cat": "Operations & Judgment",
+  "q": "What does your visibility look like during a school day?",
+  "hint": "Out-of-office instincts.",
+  "look": "Presence, not desk-bound.",
+  "align": "Doors at arrival, halls at passing, cafeteria at lunch, buses at dismissal, events at night.",
+  "tags": [],
+  "notes": "“Kids behave differently in a building where adults are present and pleasant. So do adults.”"
+ },
+ {
+  "id": "Q48",
+  "set": "universal",
+  "cat": "Operations & Judgment",
+  "q": "Tell us about a time you made an unpopular decision.",
+  "hint": "Spine + empathy + outcome.",
+  "look": "Conviction with communication.",
+  "align": "One real interim discipline/policy call (or union stance): the why, the communication, the result.",
+  "tags": [
+   "MID-YEAR COLD START"
+  ],
+  "notes": "⚠ Don't pick one where you turned out wrong."
+ },
+ {
+  "id": "Q49",
+  "set": "universal",
+  "cat": "Operations & Judgment",
+  "q": "Tell us about a failure or significant mistake.",
+  "hint": "Real ownership + learning. No humble-brags.",
+  "look": "Genuine accountability.",
+  "align": "True and contained: a communication loop closed too slowly early in the interim, the trust cost, and the system you built so it can't recur.",
+  "tags": [],
+  "notes": "Shape: ownership → fix → systemized prevention."
+ },
+ {
+  "id": "Q50",
+  "set": "universal",
+  "cat": "Operations & Judgment",
+  "q": "Tell us about a time you changed your mind after pushback.",
+  "hint": "Correctability.",
+  "look": "Can new information move you?",
+  "align": "A real moment a teacher/parent/student gave you info that changed a call.",
+  "tags": [],
+  "notes": "End: “Correctable in private earns the right to be backed in public.”"
+ },
+ {
+  "id": "Q51",
+  "set": "universal",
+  "cat": "Operations & Judgment",
+  "q": "How do you manage time in a job that's 90% interruptions?",
+  "hint": "Systems, not superpowers.",
+  "look": "Organization that survives chaos.",
+  "align": "Documentation templates, tracking sheets, calendar discipline, end-of-day loop-closing.",
+  "tags": [
+   "THE TRACKER",
+   "DOCUMENTATION STANDARD"
+  ],
+  "notes": ""
+ },
+ {
+  "id": "Q52",
+  "set": "universal",
+  "cat": "Operations & Judgment",
+  "q": "What would teachers say about you? What would students say?",
+  "hint": "Self-awareness across two audiences.",
+  "look": "Honest, specific self-read.",
+  "align": "Teachers: “He follows through, he backs us, referrals don't vanish.” Students: “He's fair, he listens, he means it.”",
+  "tags": [],
+  "notes": "Use a real moment if you have one."
+ },
+ {
+  "id": "Q53",
+  "set": "universal",
+  "star": true,
+  "cat": "Operations & Judgment",
+  "q": "What's your biggest strength? Biggest weakness?",
+  "hint": "Honest, calibrated. Pick ONE real weakness + a plan.",
+  "look": "No fake weakness; no claiming your strengths as weaknesses.",
+  "align": "Strength: systems that serve relationships. Weakness: evaluator-of-record cycles OR master-schedule construction — plus the growth plan.",
+  "tags": [
+   "THE TRACKER",
+   "THE KID WHO TURNED"
+  ],
+  "notes": "MEMORIZE. ⚠ Never name attendance, data, or MTSS as a weakness."
+ },
+ {
+  "id": "Q54",
+  "set": "universal",
+  "cat": "Operations & Judgment",
+  "q": "Where do you see yourself in five years?",
+  "hint": "Ambition that isn't “gone in 18 months.”",
+  "look": "Commitment + reasonable growth.",
+  "align": "“Growing in a district I've put roots into. Open to a principalship someday; you earn the next seat by being excellent in this one.”",
+  "tags": [],
+  "notes": ""
+ },
+ {
+  "id": "Q55",
+  "set": "universal",
+  "star": true,
+  "cat": "Operations & Judgment",
+  "q": "Why should we hire you over the other candidates?",
+  "hint": "A confident closing argument; don't trash rivals.",
+  "look": "Your three-point case + one line for them.",
+  "align": "(1) Done the job mid-year, cold, at scale. (2) Systems that ease teachers' lives and make discipline consistent. (3) Relationship-centered with lawyer-grade documentation.",
+  "tags": [],
+  "notes": "End with one sentence tailored to THEM."
+ },
+ {
+  "id": "Q56",
+  "set": "universal",
+  "cat": "Operations & Judgment",
+  "q": "What questions do you have for us?",
+  "hint": "Curiosity about THEIR reality, never benefits.",
+  "look": "Thoughtful questions about the building.",
+  "align": "“What does a clear win look like in 90 days?” / “What's the hardest part of this job in this building?” / “Where is PBIS strongest, and where does it need new energy?”",
+  "tags": [],
+  "notes": "⚠ Never lead with salary. Never say “no questions.”"
+ },
+ {
+  "id": "G1",
+  "set": "grandledge",
+  "star": true,
+  "cat": "Grand Ledge",
+  "q": "Why Grand Ledge? What draws you to this district specifically?",
+  "hint": "You're local (Holt, ~20 min) and know the CAAC. Be specific, not just “it's close.”",
+  "look": "Genuine, district-specific reasons.",
+  "align": "“I know this region and this conference from the inside — I've competed against the Comets for years. Grand Ledge keeps getting it right: a top-5% graduation rate in the state, a community that shows up. I'm twenty minutes away and I want to plant roots somewhere that takes its schools this seriously.”",
+  "tags": [],
+  "notes": "You already used the CAAC hook in your cover letter. Lead with regional knowledge + stability."
+ },
+ {
+  "id": "G2",
+  "set": "grandledge",
+  "star": true,
+  "cat": "Grand Ledge",
+  "q": "This is a new, third assistant principal position. How do you see it fitting with the current structure?",
+  "hint": "They have 2 APs (Rice 9-10, Wegenke 11-12) + 2 Deans. You'd be a third AP. No turf.",
+  "look": "Did you research the admin structure? Team-fit, flexibility, no power grab.",
+  "align": "“Right now you split 9-10 and 11-12, each with an AP and a Dean of Students. A third AP is about capacity — I'd sit down with Dr. Wright, Tonya Rice, and Blake Wegenke in week one to map where the gaps are and where I take weight off the team. Clear lanes are a gift to a building; fuzzy lanes are a problem for teachers.”",
+  "tags": [
+   "MID-YEAR COLD START"
+  ],
+  "notes": "Names: Principal Dr. Ken Wright; APs Tonya Rice (9-10) & Blake Wegenke (11-12); Deans Phil Cutts (9-10) & Maria Capra (11-12)."
+ },
+ {
+  "id": "G3",
+  "set": "grandledge",
+  "star": true,
+  "cat": "Grand Ledge",
+  "q": "GLHS has a strong graduation rate but high chronic absenteeism. What would you do about it?",
+  "hint": "Their flagged challenge. Systems + tiers + relationships. The tracker.",
+  "look": "A real plan; diagnose before prescribing.",
+  "align": "Tracker story, then: “Grand Ledge is a PowerSchool district, so month one I'd map what you already capture and who owns intervention — the system should fit this building. Then tier it: universal culture, targeted outreach, case management for the chronic.”",
+  "tags": [
+   "THE TRACKER"
+  ],
+  "notes": "Grad rate ~94% (top 5% in state), but chronic absenteeism and subgroup gaps are the flagged soft spots. Frame as post-COVID, like everyone."
+ },
+ {
+  "id": "G4",
+  "set": "grandledge",
+  "cat": "Grand Ledge",
+  "q": "We're a PowerSchool district. What's your experience with that SIS?",
+  "hint": "GL has used PowerSchool since 1997 — a heavy PowerSchool district (code PSPB).",
+  "look": "Comfort with their SIS, or honest transferability.",
+  "align": "“I built my attendance and behavior tracking system by pulling SIS exports, so I learn a district's data plumbing fast.” [If you've used PowerSchool, say so; if Okemos uses another SIS, name it and bridge.]",
+  "tags": [
+   "THE TRACKER"
+  ],
+  "notes": "⚠ Confirm whether you've touched PowerSchool specifically. GL is proud of 25+ years on it."
+ },
+ {
+  "id": "G5",
+  "set": "grandledge",
+  "star": true,
+  "cat": "Grand Ledge",
+  "q": "Comet Academy is our credit-recovery program, run in partnership with Relevant Academy. How would you work with it?",
+  "hint": "Your former employer (Relevant Academy, 2010-12) runs their credit recovery. Huge connection.",
+  "look": "Did you research it? Pathways-back philosophy; the Relevant tie is a genuine asset.",
+  "align": "“Comet Academy is your Edgenuity-based credit recovery for 11th and 12th graders off track to graduate, run with Relevant Academy — where I actually worked early in my career. So I know that model and that team. It's the pathway that makes my discipline philosophy workable: when a kid can't succeed in the main building right now, that's a route back, not an exile. I'd keep the handoff tight — shared data, shared follow-up, a celebrated door back in.”",
+  "tags": [],
+  "notes": "GOLD. Comet Academy director is Lauren Blakely (relevantacademy.org). You have real history with the org running their alt-ed. Name it; don't oversell."
+ },
+ {
+  "id": "G6",
+  "set": "grandledge",
+  "cat": "Grand Ledge",
+  "q": "You're coming from a CAAC competitor in Okemos. How does knowing this conference and community help you?",
+  "hint": "Regional knowledge is real, but be humble — different building, different culture.",
+  "look": "Insider knowledge without arrogance.",
+  "align": "“I've seen Grand Ledge from across the field for years — I know the conference, the rivalries, the caliber of program you run, so I don't need a semester to understand the landscape. But every building has its own culture I'd need to learn from the inside, so my first months are listening months.”",
+  "tags": [],
+  "notes": ""
+ },
+ {
+  "id": "G7",
+  "set": "grandledge",
+  "cat": "Grand Ledge",
+  "q": "GLHS has around 1,700 students. How do you handle a school that size?",
+  "hint": "You ran discipline for ~1,200 at Okemos. Systems scale; relationships need intention.",
+  "look": "Operating at size without losing the kid-level focus.",
+  "align": "“I ran discipline, attendance, and operations for about 1,200 students at Okemos, so this scale doesn't faze me — and it's exactly why systems matter. At this size you can't hold it in your head; you need data and process so no kid falls through. The systems are what let me still know the kid in front of me.”",
+  "tags": [
+   "THE TRACKER",
+   "MID-YEAR COLD START"
+  ],
+  "notes": ""
+ },
+ {
+  "id": "G8",
+  "set": "grandledge",
+  "cat": "Grand Ledge",
+  "q": "Our district builds in teacher collaboration days and GLHS runs a C3 flex schedule. How would you support structures like that?",
+  "hint": "Barnes is big on teacher collaboration / lifelong learning. C3 = flex/intervention block.",
+  "look": "Support for teacher collaboration + flex-time structures (MTSS-adjacent).",
+  "align": "“Dr. Barnes has built real teacher collaboration into the calendar, and the C3 schedule creates time for intervention and support. My job is to protect that time and make it usable — handle the operational fires so collaboration days are actually about learning, and make sure flex time reaches the kids who need it most.”",
+  "tags": [
+   "TLT"
+  ],
+  "notes": "GL attaches PD days to existing breaks (Barnes initiative, 2026). C3 = their alternate bell schedule."
+ },
+ {
+  "id": "G9",
+  "set": "grandledge",
+  "cat": "Grand Ledge",
+  "q": "State data flags subgroup performance gaps here. How do you use data to address equity?",
+  "hint": "Data as map, individualized. Humble — learn their data first.",
+  "look": "Equity-minded data use without overclaiming or preaching.",
+  "align": "“Data is a map, not a scoreboard. Disparities show up in attendance, referrals, and grades before they show up in a test score, so I watch those leading indicators by subgroup and act early. I'd want to learn how Grand Ledge already disaggregates its data before suggesting any change.”",
+  "tags": [
+   "THE TRACKER"
+  ],
+  "notes": "⚠ Equity is sensitive; be substantive and humble. GL has a DEI page."
+ },
+ {
+  "id": "G10",
+  "set": "grandledge",
+  "cat": "Grand Ledge",
+  "q": "You'd work alongside two APs and two Deans of Students. How do you find your lane?",
+  "hint": "Team play. Clear lanes. No turf.",
+  "look": "Collaboration, humility, a defined role.",
+  "align": "“First I learn how the current team divides the work, then I take real weight where the gaps are. I'd rather over-communicate with Dr. Wright and the other APs than step on toes. Two APs with clear lanes are a gift; fuzzy lanes are a problem for teachers and families.”",
+  "tags": [
+   "UNION PRESIDENT"
+  ],
+  "notes": ""
+ },
+ {
+  "id": "G11",
+  "set": "grandledge",
+  "cat": "Grand Ledge",
+  "q": "Grand Ledge is a tradition-rich, tight community, and our superintendent is a lifelong Comet. How do you fit in as an outsider?",
+  "hint": "Humility, visibility, earn trust. Don't pretend to be a local.",
+  "look": "Respect for the culture and a plan to earn your way in.",
+  "align": "“I'm not a Comet by history and I won't pretend to be. What I'd bring is genuine respect for what this community has built and a willingness to show up — at the games, the concerts, the events — and earn trust by being consistent and present. In a community this rooted, your word travels faster than your title.”",
+  "tags": [
+   "UNION PRESIDENT"
+  ],
+  "notes": "Supt Dr. Bill Barnes graduated GLHS in 2000; deep local ties. Strong band/athletics traditions."
+ },
+ {
+  "id": "G12",
+  "set": "grandledge",
+  "cat": "Grand Ledge",
+  "q": "How do you approach discipline — PBIS, restorative practices, consequences?",
+  "hint": "Your signature philosophy line. Their posting named PBIS specifically.",
+  "look": "Balanced discipline that protects both the kid and the classroom.",
+  "align": "Philosophy line, verbatim. GL's posting explicitly named PBIS and restorative practices — this is squarely your lane, so lead with confidence.",
+  "tags": [
+   "PHILOSOPHY",
+   "THE KID WHO TURNED"
+  ],
+  "notes": "GL posting listed PBIS by name."
+ },
+ {
+  "id": "G13",
+  "set": "grandledge",
+  "star": true,
+  "cat": "Grand Ledge",
+  "q": "This is a new position you'd help define. What do your first 90 days look like?",
+  "hint": "Listening, learning systems, stability — not “I'll change everything.”",
+  "look": "A humble, concrete entry plan.",
+  "align": "“First 90 days are mostly listening and learning — how the team divides work, how discipline and attendance flow through PowerSchool, where teachers feel friction. I'd take operational weight off the team immediately, close every loop I open, and resist the urge to fix anything before I understand why it's built the way it is. Stability first; ideas earn their place after.”",
+  "tags": [
+   "MID-YEAR COLD START"
+  ],
+  "notes": ""
+ },
+ {
+  "id": "G14",
+  "set": "grandledge",
+  "cat": "Grand Ledge",
+  "q": "With schools of choice and enrollment pressure, what's the AP's role in keeping families?",
+  "hint": "Climate = retention. GL competes for students (opened unlimited K-1 choice).",
+  "look": "Connecting daily AP work to retention.",
+  "align": "“Families choose and stay where their kid is known, safe, and growing — and they leave over how a discipline situation got handled. Every parent interaction is a retention decision: same team, fast follow-up, no surprises.”",
+  "tags": [
+   "SAME-TEAM CONFERENCE"
+  ],
+  "notes": "GL opened unlimited schools of choice for K & 1st for 2026-27; enrollment matters."
+ },
+ {
+  "id": "G15",
+  "set": "grandledge",
+  "cat": "Grand Ledge",
+  "q": "We have a big marching band, strong athletics, and a deep extracurricular culture. How do you approach event supervision at a large school?",
+  "hint": "You've supervised events. Visibility. Embrace the night/weekend presence.",
+  "look": "Willingness to be present; operational competence at scale.",
+  "align": "“I've supervised extracurricular events and student activities, and in a school with a program like Grand Ledge's marching band and athletics, that visibility is the job, not an add-on. Being present at the events is how you build the relationships you spend on the hard days.”",
+  "tags": [],
+  "notes": "GLHS marching band is a major program; strong athletics."
+ },
+ {
+  "id": "G16",
+  "set": "grandledge",
+  "cat": "Grand Ledge",
+  "q": "This district recently navigated the loss of a staff member with real care, and mental health is a visible priority. How do you support wellbeing in a crisis?",
+  "hint": "Care + protocol + humanity. They have a Health Center, Okay2Say, a crisis team.",
+  "look": "Compassion plus competence under hard circumstances.",
+  "align": "“In a crisis, people remember whether leadership moved fast and stayed human. I lean on protocol and the counseling team, but I also make sure staff and kids hear hard news with care, not as an afterthought. Grand Ledge clearly already leads this way.”",
+  "tags": [],
+  "notes": "GL closed elementary schools so staff could grieve a colleague before teaching (May 2026) — handled with notable care. GLHS has a Health Center + Okay2Say."
+ },
+ {
+  "id": "G17",
+  "set": "grandledge",
+  "cat": "Grand Ledge",
+  "q": "GLHS offers AP courses, dual enrollment, the Career Prep Center, and credit recovery. How does an AP support both college-bound and CTE/recovery students?",
+  "hint": "Every kid a pathway. You ran a range; you value multiple routes.",
+  "look": "Belief that rigor and alternative pathways both matter.",
+  "align": "“A great high school isn't one path — it's AP and dual enrollment for some, the Career Prep Center for others, Comet Academy for the kid who needs a different route to the same diploma. The AP's job is to make sure no path is treated as the lesser one, and that every kid is on one that fits.”",
+  "tags": [
+   "GRADING REFORM"
+  ],
+  "notes": "GLHS: AP courses, dual enrollment via LCC, Eaton CPC (CTE via ERESA), Comet Academy (credit recovery)."
+ },
+ {
+  "id": "G18",
+  "set": "grandledge",
+  "cat": "Grand Ledge",
+  "q": "Is there anything about this role or district that gives you pause?",
+  "hint": "Honest, human. Short commute is a plus; outsider-to-a-tight-community is the real one.",
+  "look": "Self-aware, not evasive.",
+  "align": "“The commute's a plus — I'm about twenty minutes away. The honest adjustment is that Grand Ledge is a tight, tradition-rich community and I'd be coming from the outside, so I'd have to earn trust rather than assume it. What doesn't give me pause is the work itself — discipline, attendance, PBIS, systems. That's the job I've been doing.”",
+  "tags": [],
+  "notes": ""
+ }
+];
+
+// ---------- state ----------
+const LS_KEY = "ap_flashcards_v1";
+let state = { set:"all", starOnly:false, practiceOnly:false, marks:{}, order:[], pos:0 };
+try { const s = JSON.parse(localStorage.getItem(LS_KEY)); if(s){ state.marks = s.marks||{}; } } catch(e){}
+
+function saveMarks(){ try { localStorage.setItem(LS_KEY, JSON.stringify({marks:state.marks})); } catch(e){} }
+
+function shuffle(a){ for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+
+function pool(){
+  return CARDS.filter(c=>{
+    if(state.set!=="all" && c.set!==state.set) return false;
+    if(state.starOnly && !c.star) return false;
+    if(state.practiceOnly && state.marks[c.id]!=="again") return false;
+    return true;
+  });
+}
+
+function buildOrder(keepCurrent){
+  const ids = pool().map(c=>c.id);
+  let cur = state.order[state.pos];
+  state.order = shuffle(ids.slice());
+  if(keepCurrent && cur && state.order.includes(cur)){
+    state.order = [cur, ...state.order.filter(x=>x!==cur)];
+    state.pos = 0;
+  } else {
+    state.pos = 0;
+  }
+}
+
+let stage = 0; // 0=question, 1=hint shown, 2=full
+
+function render(){
+  const main = document.getElementById("main");
+  const list = state.order;
+  updateStats();
+  if(list.length===0){
+    main.innerHTML = `<div class="empty"><h2>No cards match</h2><p>Your filters hid everything. Loosen them to keep practicing.</p><button id="clearFilters">Clear filters</button></div>`;
+    document.getElementById("clearFilters").onclick=()=>{ state.starOnly=false; state.practiceOnly=false; syncControls(); buildOrder(false); stage=0; render(); };
+    document.getElementById("counter").textContent="0 / 0";
+    document.getElementById("progbar").style.width="0%";
+    return;
+  }
+  if(state.pos>=list.length) state.pos=0;
+  const c = CARDS.find(x=>x.id===list[state.pos]);
+  const mark = state.marks[c.id];
+  document.getElementById("counter").textContent = `${state.pos+1} / ${list.length}`;
+  document.getElementById("progbar").style.width = `${((state.pos+1)/list.length)*100}%`;
+
+  let pill = "";
+  if(mark==="got") pill = `<span class="statepill got">✓ Got it</span>`;
+  else if(mark==="again") pill = `<span class="statepill again">↻ Practice</span>`;
+
+  let body = `
+    <div class="card">
+      <div class="card-meta">
+        <span class="tag">${c.id} · ${c.cat}</span>
+        ${c.star?`<span class="star">★ MUST-NAIL</span>`:""}
+        ${pill}
+      </div>
+      <div class="card-scroll" id="scroll">
+        <div class="question">${c.q}</div>`;
+
+  if(stage>=1){
+    body += `<div class="hint">${c.hint}</div>`;
+  }
+  if(stage>=2){
+    body += `
+      <div class="reveal-block">
+        <div class="reveal-label">Likely looking for</div>
+        <div class="reveal-body">${c.look}</div>
+        <div class="reveal-label">Your alignment</div>
+        <div class="reveal-body amber">${c.align}</div>`;
+    if(c.tags && c.tags.length){
+      body += `<div class="tags-row">` + c.tags.map(t=>`<span class="chip">${t}</span>`).join("") + `</div>`;
+    }
+    if(c.notes){
+      body += `<div class="reveal-label">Important notes</div><div class="reveal-body">${c.notes.replace(/⚠/g,'<span class="warn">⚠</span>')}</div>`;
+    }
+    body += `</div>`;
+  }
+
+  body += `</div></div>`; // close scroll + card... wait
+  main.innerHTML = body;
+
+  // actions
+  const actions = document.createElement("div");
+  actions.className="actions";
+  let btns = "";
+  if(stage===0){
+    btns += `<button class="bigbtn hint-btn" id="hintBtn">💡 Reveal hint</button>`;
+    btns += `<button class="bigbtn reveal-btn" id="revealBtn">Show full answer</button>`;
+  } else if(stage===1){
+    btns += `<button class="bigbtn reveal-btn" id="revealBtn">Show full answer</button>`;
+  } else {
+    btns += `<div class="rate-row">
+        <button class="bigbtn againbtn" id="againBtn">↻ Practice again</button>
+        <button class="bigbtn gotbtn" id="gotBtn">✓ Got it</button>
+      </div>`;
+  }
+  btns += `<div class="nav-row">
+      <button class="bigbtn prevbtn" id="prevBtn">‹ Prev</button>
+      <button class="bigbtn nextbtn" id="nextBtn">Next ›</button>
+    </div>`;
+  actions.innerHTML = btns;
+  document.querySelector(".card").appendChild(actions);
+
+  // wire
+  const hb=document.getElementById("hintBtn"); if(hb) hb.onclick=()=>{ stage=1; render(); };
+  const rb=document.getElementById("revealBtn"); if(rb) rb.onclick=()=>{ stage=2; render(); };
+  const gb=document.getElementById("gotBtn"); if(gb) gb.onclick=()=>{ state.marks[c.id]="got"; saveMarks(); next(); };
+  const ab=document.getElementById("againBtn"); if(ab) ab.onclick=()=>{ state.marks[c.id]="again"; saveMarks(); next(); };
+  document.getElementById("prevBtn").onclick=prev;
+  document.getElementById("nextBtn").onclick=next;
+}
+
+function next(){
+  if(state.order.length===0) return;
+  state.pos++;
+  if(state.pos>=state.order.length){ buildOrder(false); } // reshuffle at end
+  stage=0; render();
+}
+function prev(){
+  if(state.order.length===0) return;
+  state.pos = (state.pos-1+state.order.length)%state.order.length;
+  stage=0; render();
+}
+
+function updateStats(){
+  const inScope = CARDS.filter(c=> state.set==="all"||c.set===state.set);
+  let got=0, again=0;
+  inScope.forEach(c=>{ if(state.marks[c.id]==="got")got++; else if(state.marks[c.id]==="again")again++; });
+  const left = inScope.length-got-again;
+  const sg=document.getElementById("statGot"), sa=document.getElementById("statAgain"), sl=document.getElementById("statLeft");
+  if(sg){ sg.textContent=got; sa.textContent=again; sl.textContent=left; }
+}
+
+function syncControls(){
+  document.querySelectorAll("#setSeg button").forEach(b=>b.classList.toggle("on", b.dataset.set===state.set));
+  document.getElementById("starBtn").classList.toggle("active", state.starOnly);
+}
+
+// set toggle
+document.querySelectorAll("#setSeg button").forEach(b=>{
+  b.onclick=()=>{ state.set=b.dataset.set; state.practiceOnly=false; syncControls(); buildOrder(false); stage=0; render(); };
+});
+// star toggle
+document.getElementById("starBtn").onclick=()=>{ state.starOnly=!state.starOnly; syncControls(); buildOrder(false); stage=0; render(); };
+// menu
+const backdrop=document.getElementById("backdrop"), sheet=document.getElementById("sheet");
+function openSheet(){ updateStats(); backdrop.classList.add("show"); sheet.classList.add("show"); }
+function closeSheet(){ backdrop.classList.remove("show"); sheet.classList.remove("show"); }
+document.getElementById("menuBtn").onclick=openSheet;
+document.getElementById("closeSheet").onclick=closeSheet;
+backdrop.onclick=closeSheet;
+document.getElementById("resetBtn").onclick=()=>{
+  if(confirm("Reset all got-it / practice marks?")){ state.marks={}; saveMarks(); state.practiceOnly=false; syncControls(); buildOrder(false); stage=0; render(); closeSheet(); }
+};
+document.getElementById("practiceOnly").onclick=()=>{
+  state.practiceOnly=true; state.starOnly=false; syncControls(); buildOrder(false); stage=0; render(); closeSheet();
+};
+
+// swipe support
+let tx=0;
+document.getElementById("main").addEventListener("touchstart",e=>{ tx=e.changedTouches[0].clientX; },{passive:true});
+document.getElementById("main").addEventListener("touchend",e=>{
+  const dx=e.changedTouches[0].clientX-tx;
+  const sc=document.getElementById("scroll");
+  if(Math.abs(dx)>60){ if(dx<0) next(); else prev(); }
+},{passive:true});
+
+// init
+syncControls();
+buildOrder(false);
+render();
+</script>
+</body>
+</html>
